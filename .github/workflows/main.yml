@@ -1,43 +1,42 @@
 name: Build Minecraft Java Edition with Gradle
-
 on:
   push:
     branches:
-      - main  # 當推送到 main 分支時觸發
+      - main
+      - 'feature/**'
   pull_request:
     branches:
-      - main  # 當對 main 分支提出拉取請求時觸發
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # 選擇運行 Ubuntu 作為環境
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2  # 檢出代碼到工作環境
+      uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v2
+    - name: Setup Java
+      uses: actions/setup-java@v3
       with:
-        java-version: '17'       # 指定 Java 版本
-        distribution: 'temurin'  # 指定 Java 分發版本（例如 temurin）
+        distribution: 'temurin' # 或者使用 'zulu', 'adopt'
+        java-version: '17'      # Minecraft 1.18+ 通常需要 Java 17
 
     - name: Cache Gradle dependencies
-      uses: actions/cache@v2  # 快取 Gradle 依賴，加速構建
+      uses: actions/cache@v3
       with:
-        path: ~/.gradle/caches  # Gradle 快取目錄
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+        path: ~/.gradle/caches
+        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: gradle-${{ runner.os }}-
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew  # 確保 gradlew 可執行
+    - name: Grant execute permission for Gradle
+      run: chmod +x gradlew
 
-    - name: Build with Gradle
-      run: ./gradlew build  # 使用 Gradle 進行構建
+    - name: Build project with Gradle
+      run: ./gradlew build
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload built artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: minecraft-build
-        path: build/libs/*.jar  # 假設構建的 JAR 文件位於 build/libs 目錄下
+        name: minecraft-mod
+        path: build/libs/*.jar
